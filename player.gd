@@ -8,8 +8,6 @@ extends CharacterBody3D
 @export_range(10, 400, 1) var air_acceleration : float = 6 # m/s^2
 @export_range(10, 400, 1) var air_deceleration : float = 6 # m/s^2
 
-@export_range(0.1, 3.0, 0.1) var look_sensitivity : float = ProjectSettings.get_setting("gameplay/look_sensitivity")
-
 @export_range(-PI/2, PI/2) var look_clamp_low = -PI/3
 @export_range(-PI/2, PI/2) var look_clamp_high = PI/3
 
@@ -40,6 +38,7 @@ signal health_changed(value)
 @onready var foot_audio:AudioStreamPlayer3D = $FootPlayer
 @onready var invincible_timer:Timer = $InvincibleTimer
 @onready var collision_shape:CollisionShape3D = $CollisionShape3D
+@onready var nametag:Label3D = $NameTag
 
 var sounds_env:Array = [
 	preload("res://assets/sounds/swing_hit1.wav"),
@@ -72,10 +71,7 @@ func _enter_tree():
 
 
 func _ready() -> void:
-	$NameTag.text = name
-
 	if not is_multiplayer_authority(): return
-
 	camera.set_current(true)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
@@ -131,6 +127,7 @@ func _physics_process(delta : float) -> void:
 
 func _aim(event : InputEvent) -> void:
 	var mouse_axis : Vector2 = event.relative if Input.get_mouse_mode() == Input.MOUSE_MODE_CAPTURED else Vector2.ZERO
+	var look_sensitivity = ProjectSettings.get_setting("gameplay/look_sensitivity")
 	self.rotation.y -= mouse_axis.x * look_sensitivity * .001
 	head.rotation.x = clamp(head.rotation.x - mouse_axis.y * look_sensitivity * .001, -1.5, 1.5)
 

@@ -1,0 +1,53 @@
+[gd_scene load_steps=3 format=3 uid="uid://r1ylckyy0ylh"]
+
+[ext_resource type="StyleBox" uid="uid://kr3pmx0ygoh3" path="res://assets/ui/stylebox_health_bar.tres" id="1_u8bsb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4wd06"]
+draw_center = false
+border_width_left = 64
+border_width_top = 64
+border_width_right = 64
+border_width_bottom = 64
+border_color = Color(1, 1, 1, 1)
+border_blend = true
+
+[node name="HUD" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="DamageOverlay" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_4wd06")
+
+[node name="HealthBar" type="ProgressBar" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 31.0
+offset_top = -55.0
+offset_right = 193.0
+offset_bottom = -27.0
+grow_vertical = 0
+theme_override_styles/fill = ExtResource("1_u8bsb")
+value = 100.0
+show_percentage = false
+
+[node name="Label" type="Label" parent="HealthBar"]
+layout_mode = 0
+offset_right = 163.0
+offset_bottom = 28.0
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1

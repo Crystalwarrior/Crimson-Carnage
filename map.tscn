@@ -2,19 +2,11 @@
 
 [ext_resource type="Script" path="res://map.gd" id="1_u68b5"]
 [ext_resource type="AudioStream" uid="uid://cxba2uddc2i4b" path="res://assets/sounds/ambience/kangaroovindaloo__light-wind.ogg" id="2_6gig4"]
+[ext_resource type="PackedScene" uid="uid://r1ylckyy0ylh" path="res://hud.tscn" id="2_o303t"]
+[ext_resource type="PackedScene" uid="uid://ck4v60se1ta8y" path="res://main_menu.tscn" id="3_roxrb"]
 [ext_resource type="Script" path="res://Network.gd" id="3_yae80"]
-[ext_resource type="StyleBox" uid="uid://kr3pmx0ygoh3" path="res://assets/ui/stylebox_health_bar.tres" id="4_gp6fe"]
 [ext_resource type="PackedScene" uid="uid://bn02tul41okrh" path="res://health_pickup.tscn" id="5_02a5y"]
 [ext_resource type="PackedScene" uid="uid://cq4cu12pv2quq" path="res://spawn_point.tscn" id="6_1guer"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4wd06"]
-draw_center = false
-border_width_left = 64
-border_width_top = 64
-border_width_right = 64
-border_width_bottom = 64
-border_color = Color(1, 1, 1, 1)
-border_blend = true
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_lasbb"]
 sky_horizon_color = Color(0.718799, 0.747814, 0.791422, 1)
@@ -63,178 +55,9 @@ script = ExtResource("1_u68b5")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
-[node name="HUD" type="Control" parent="UI"]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
+[node name="HUD" parent="UI" instance=ExtResource("2_o303t")]
 
-[node name="DamageOverlay" type="Panel" parent="UI/HUD"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_4wd06")
-
-[node name="HealthBar" type="ProgressBar" parent="UI/HUD"]
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 31.0
-offset_top = -55.0
-offset_right = 193.0
-offset_bottom = -27.0
-grow_vertical = 0
-theme_override_styles/fill = ExtResource("4_gp6fe")
-value = 100.0
-show_percentage = false
-
-[node name="Label" type="Label" parent="UI/HUD/HealthBar"]
-layout_mode = 0
-offset_right = 163.0
-offset_bottom = 28.0
-text = "100"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="MainMenu" type="Control" parent="UI"]
-layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -576.0
-offset_top = -324.0
-offset_right = 576.0
-offset_bottom = 324.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="TabContainer" type="TabContainer" parent="UI/MainMenu"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 420.0
-offset_top = 151.0
-offset_right = -420.0
-offset_bottom = -151.0
-grow_horizontal = 2
-grow_vertical = 2
-tab_alignment = 1
-
-[node name="Join Server" type="MarginContainer" parent="UI/MainMenu/TabContainer"]
-layout_mode = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 15
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/MainMenu/TabContainer/Join Server"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="UnusedSpace" type="ReferenceRect" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer"]
-layout_mode = 2
-text = "Enter the IP and Port here"
-horizontal_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="IPAddressInput" type="LineEdit" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(145, 0)
-layout_mode = 2
-placeholder_text = "localhost"
-alignment = 1
-
-[node name="PortInput" type="LineEdit" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-placeholder_text = "11037"
-alignment = 1
-
-[node name="UnusedSpace2" type="ReferenceRect" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="JoinButton" type="Button" parent="UI/MainMenu/TabContainer/Join Server/VBoxContainer"]
-layout_mode = 2
-text = "Join!"
-
-[node name="Host Server" type="MarginContainer" parent="UI/MainMenu/TabContainer"]
-visible = false
-layout_mode = 2
-theme_override_constants/margin_left = 15
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 15
-theme_override_constants/margin_bottom = 15
-
-[node name="VBoxContainer" type="VBoxContainer" parent="UI/MainMenu/TabContainer/Host Server"]
-layout_mode = 2
-theme_override_constants/separation = 10
-
-[node name="UnusedSpace" type="ReferenceRect" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="Label" type="Label" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer"]
-layout_mode = 2
-text = "Enter the Port here"
-horizontal_alignment = 1
-
-[node name="HBoxContainer" type="HBoxContainer" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer"]
-layout_mode = 2
-alignment = 1
-
-[node name="PortInput" type="LineEdit" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer/HBoxContainer"]
-layout_mode = 2
-placeholder_text = "11037"
-alignment = 1
-
-[node name="UnusedSpace2" type="ReferenceRect" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer"]
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="HostButton" type="Button" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer"]
-layout_mode = 2
-text = "Host!"
-
-[node name="Instructions" type="Label" parent="UI/MainMenu"]
-layout_mode = 0
-offset_left = 48.0
-offset_top = 32.0
-offset_right = 389.0
-offset_bottom = 396.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 12
-text = "=================
-CRIMSON CARNAGE
-=================
-~~~Early Testing~~~
-
-Left Click = Horizontal, 45 damage
-Right Click = Vertical, 45 damage
-Middle Click = Jab, 35 damage
-Esc = capture/release mouse
-
-Jabbing has longer reach but is slower
-Your stick hits the environment
-
-Warning: stuff might be buggy as heck
-Plz report any issues you find to me"
+[node name="MainMenu" parent="UI" instance=ExtResource("3_roxrb")]
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_6gig4")
@@ -244,9 +67,6 @@ autoplay = true
 [node name="MultiplayerSpawner" type="MultiplayerSpawner" parent="."]
 _spawnable_scenes = PackedStringArray("res://player.tscn")
 spawn_path = NodePath("../Network")
-
-[node name="Network" type="Node3D" parent="."]
-script = ExtResource("3_yae80")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_b2q5k")
@@ -258,6 +78,9 @@ current = true
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 0.29384, 0.955855, 0, -0.955855, 0.29384, 0, 10.1053, 0)
 shadow_enabled = true
+
+[node name="Network" type="Node3D" parent="."]
+script = ExtResource("3_yae80")
 
 [node name="Ground" type="StaticBody3D" parent="."]
 
@@ -574,6 +397,6 @@ transform = Transform3D(1, 0, 1.74846e-07, 0, 1, 0, -1.74846e-07, 0, 1, -13, 0, 
 transform = Transform3D(0.777025, -0.62947, 0, 0.62947, 0.777025, 0, 0, 0, 1, -10.5, 6.5, 10.023)
 text = "cw wuz here"
 
-[connection signal="pressed" from="UI/MainMenu/TabContainer/Join Server/VBoxContainer/JoinButton" to="Network" method="_on_join_button_pressed"]
-[connection signal="pressed" from="UI/MainMenu/TabContainer/Host Server/VBoxContainer/HostButton" to="Network" method="_on_host_button_pressed"]
+[connection signal="host" from="UI/MainMenu" to="Network" method="_on_main_menu_host"]
+[connection signal="join" from="UI/MainMenu" to="Network" method="_on_main_menu_join"]
 [connection signal="spawned" from="MultiplayerSpawner" to="Network" method="_on_multiplayer_spawner_spawned"]
