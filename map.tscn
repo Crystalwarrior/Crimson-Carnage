@@ -94,29 +94,15 @@ offset_bottom = -27.0
 grow_vertical = 0
 theme_override_styles/fill = ExtResource("4_gp6fe")
 value = 100.0
+show_percentage = false
 
-[node name="Instructions" type="Label" parent="UI/HUD"]
+[node name="Label" type="Label" parent="UI/HUD/HealthBar"]
 layout_mode = 0
-offset_left = 48.0
-offset_top = 32.0
-offset_right = 389.0
-offset_bottom = 356.0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 12
-text = "=================
-CRIMSON CARNAGE
-=================
-~~~Early Testing~~~
-
-Left Click = Horizontal, 45 damage
-Right Click = Vertical, 45 damage
-Middle Click = Jab, 35 damage
-
-Jabbing has longer reach but is slower
-Your stick hits the environment
-
-Warning: stuff might be buggy as heck
-Plz report any issues you find to me"
+offset_right = 163.0
+offset_bottom = 28.0
+text = "100"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="MainMenu" type="Control" parent="UI"]
 layout_mode = 3
@@ -225,6 +211,30 @@ size_flags_vertical = 3
 [node name="HostButton" type="Button" parent="UI/MainMenu/TabContainer/Host Server/VBoxContainer"]
 layout_mode = 2
 text = "Host!"
+
+[node name="Instructions" type="Label" parent="UI/MainMenu"]
+layout_mode = 0
+offset_left = 48.0
+offset_top = 32.0
+offset_right = 389.0
+offset_bottom = 396.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 12
+text = "=================
+CRIMSON CARNAGE
+=================
+~~~Early Testing~~~
+
+Left Click = Horizontal, 45 damage
+Right Click = Vertical, 45 damage
+Middle Click = Jab, 35 damage
+Esc = capture/release mouse
+
+Jabbing has longer reach but is slower
+Your stick hits the environment
+
+Warning: stuff might be buggy as heck
+Plz report any issues you find to me"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("2_6gig4")

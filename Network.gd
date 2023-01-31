@@ -96,6 +96,7 @@ func update_health_bar(health_value):
 		respawn_player(multiplayer.get_unique_id())
 		health_value = 100.0
 	health_bar.value = health_value
+	health_bar.get_node("Label").text = str(health_value)
 
 func _on_multiplayer_spawner_spawned(node):
 	if node.is_multiplayer_authority():

@@ -121,7 +121,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0, 0.05, 0.5, 0.65, 0.75),
 "transitions": PackedFloat32Array(1, 0.2, 2, 0.5, 1),
 "update": 0,
-"values": [Vector3(0.3, -0.4, -0.6), Vector3(0.1, -0.4, -0.7), Vector3(0, -0.0999999, -1.03126), Vector3(0.1, -0.4, -0.7), Vector3(0.3, -0.4, -0.6)]
+"values": [Vector3(0.3, -0.4, -0.6), Vector3(0, -0.0999999, -0.7), Vector3(0, 1.19209e-07, -1.03126), Vector3(0.1, -0.4, -0.7), Vector3(0.3, -0.4, -0.6)]
 }
 tracks/1/type = "value"
 tracks/1/imported = false
@@ -130,10 +130,10 @@ tracks/1/path = NodePath(".:rotation")
 tracks/1/interp = 1
 tracks/1/loop_wrap = true
 tracks/1/keys = {
-"times": PackedFloat32Array(0, 0.06, 0.5, 0.65, 0.75),
-"transitions": PackedFloat32Array(1, 0.2, 2, 0.5, 1),
+"times": PackedFloat32Array(0, 0.05, 0.5, 0.65, 0.75),
+"transitions": PackedFloat32Array(1, 1, 2, 0.5, 1),
 "update": 0,
-"values": [Vector3(-1.48353, -5.86126e-08, 0.0872665), Vector3(-1.5708, 0.0872665, 0), Vector3(-1.38738, 0, 0), Vector3(-1.5708, 0.0872665, 0), Vector3(-1.48353, -5.86126e-08, 0.0872665)]
+"values": [Vector3(-1.48353, -5.86126e-08, 0.0872665), Vector3(-1.5708, 0, 0), Vector3(-1.56191, 0, 0), Vector3(-1.5708, 0.0872665, 0), Vector3(-1.48353, -5.86126e-08, 0.0872665)]
 }
 tracks/2/type = "value"
 tracks/2/imported = false
@@ -812,15 +812,6 @@ material = SubResource("StandardMaterial3D_ulxxl")
 
 [node name="Player" type="CharacterBody3D"]
 script = ExtResource("1_2iejj")
-head_path = NodePath("HeadPivot")
-face_path = NodePath("HeadPivot/Face")
-body_path = NodePath("WaistPivot/Body")
-camera_path = NodePath("HeadPivot/CameraFirstPerson")
-animation_path = NodePath("AnimationPlayer")
-hand_animation_path = NodePath("HeadPivot/SwingPivot/HandPivot/HandAnimation")
-weapon_hitbox_path = NodePath("HeadPivot/SwingPivot/HandPivot/WeaponStick/WeaponHitbox")
-weapon_audio_path = NodePath("HeadPivot/SwingPivot/HandPivot/WeaponStick/AudioStreamPlayer3D")
-foot_audio_path = NodePath("FootPlayer")
 
 [node name="NameTag" type="Label3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
@@ -840,6 +831,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.5, -0.4, -0.8)
 
 [node name="HandModel" type="MeshInstance3D" parent="HeadPivot/SwingPivot/HandPivot"]
+transform = Transform3D(1, 0, 1.39698e-09, 0, 1, 1.49012e-08, 0, 1.49012e-08, 1, 0, 0, 0)
 mesh = SubResource("SphereMesh_1p27o")
 
 [node name="WeaponStick" type="Node3D" parent="HeadPivot/SwingPivot/HandPivot"]

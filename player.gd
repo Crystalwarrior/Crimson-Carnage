@@ -28,25 +28,16 @@ var max_health : float = 100.0
 
 signal health_changed(value)
 
-@export var head_path:NodePath
-@export var face_path:NodePath
-@export var body_path:NodePath
-@export var camera_path:NodePath
-@export var animation_path:NodePath
-@export var hand_animation_path:NodePath
-@export var weapon_hitbox_path:NodePath
-@export var weapon_audio_path:NodePath
-@export var foot_audio_path:NodePath
-
-@onready var head:Node3D = get_node(head_path)
-@onready var face:MeshInstance3D = get_node(face_path)
-@onready var body:MeshInstance3D = get_node(body_path)
-@onready var camera:Camera3D = get_node(camera_path)
-@onready var animation:AnimationPlayer = get_node(animation_path)
-@onready var hand_animation:AnimationPlayer = get_node(hand_animation_path)
-@onready var weapon_hitbox:Area3D = get_node(weapon_hitbox_path)
-@onready var weapon_audio:AudioStreamPlayer3D = get_node(weapon_audio_path)
-@onready var foot_audio:AudioStreamPlayer3D = get_node(foot_audio_path)
+@onready var head:Node3D = $HeadPivot
+@onready var face:MeshInstance3D = $HeadPivot/Face
+@onready var body:MeshInstance3D = $WaistPivot/Body
+@onready var hand:MeshInstance3D = $HeadPivot/SwingPivot/HandPivot/HandModel
+@onready var camera:Camera3D = $HeadPivot/CameraFirstPerson
+@onready var animation:AnimationPlayer = $AnimationPlayer
+@onready var hand_animation:AnimationPlayer = $HeadPivot/SwingPivot/HandPivot/HandAnimation
+@onready var weapon_hitbox:Area3D = $HeadPivot/SwingPivot/HandPivot/WeaponStick/WeaponHitbox
+@onready var weapon_audio:AudioStreamPlayer3D = $HeadPivot/SwingPivot/HandPivot/WeaponStick/AudioStreamPlayer3D
+@onready var foot_audio:AudioStreamPlayer3D = $FootPlayer
 @onready var invincible_timer:Timer = $InvincibleTimer
 @onready var collision_shape:CollisionShape3D = $CollisionShape3D
 
@@ -131,9 +122,11 @@ func _physics_process(delta : float) -> void:
 	if camera.current:
 		body.cast_shadow = body.SHADOW_CASTING_SETTING_SHADOWS_ONLY
 		face.cast_shadow = face.SHADOW_CASTING_SETTING_SHADOWS_ONLY
+		hand.cast_shadow = hand.SHADOW_CASTING_SETTING_SHADOWS_ONLY
 	else:
-		face.cast_shadow = body.SHADOW_CASTING_SETTING_ON
+		body.cast_shadow = body.SHADOW_CASTING_SETTING_ON
 		face.cast_shadow = face.SHADOW_CASTING_SETTING_ON
+		hand.cast_shadow = hand.SHADOW_CASTING_SETTING_ON
 
 
 func _aim(event : InputEvent) -> void:
