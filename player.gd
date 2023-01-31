@@ -1,12 +1,12 @@
 extends CharacterBody3D
 
 @export_range(1, 35, 1) var speed : float = 5 # m/s
-@export_range(10, 400, 1) var acceleration : float = 25 # m/s^2
-@export_range(10, 400, 1) var deceleration : float = 50 # m/s^2
+@export_range(0, 400, 1) var acceleration : float = 25 # m/s^2
+@export_range(0, 400, 1) var deceleration : float = 50 # m/s^2
 
 @export_range(0.1, 3.0, 0.1) var jump_height : float = 2 # m
-@export_range(10, 400, 1) var air_acceleration : float = 6 # m/s^2
-@export_range(10, 400, 1) var air_deceleration : float = 6 # m/s^2
+@export_range(0, 400, 1) var air_acceleration : float = 6 # m/s^2
+@export_range(0, 400, 1) var air_deceleration : float = 6 # m/s^2
 
 @export_range(-PI/2, PI/2) var look_clamp_low = -PI/3
 @export_range(-PI/2, PI/2) var look_clamp_high = PI/3
@@ -27,6 +27,7 @@ var max_health : float = 100.0
 signal health_changed(value)
 
 @onready var head:Node3D = $HeadPivot
+@onready var head_shape:MeshInstance3D = $HeadPivot/Head
 @onready var face:MeshInstance3D = $HeadPivot/Face
 @onready var body:MeshInstance3D = $WaistPivot/Body
 @onready var hand:MeshInstance3D = $HeadPivot/SwingPivot/HandPivot/HandModel
@@ -71,6 +72,7 @@ func _enter_tree():
 
 
 func _ready() -> void:
+	colorize()
 	if not is_multiplayer_authority(): return
 	camera.set_current(true)
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
@@ -328,3 +330,32 @@ func set_health(amt):
 @rpc("any_peer", "call_local")
 func invincibility(amt):
 	invincible_timer.start(amt)
+
+
+func colorize():
+	var face_color = stringToColor(name)
+	var head_color = stringToColor(name, face_color)
+	
+	var color_mat = StandardMaterial3D.new()
+	color_mat.albedo_color = face_color
+	face.set_surface_override_material(0, color_mat)
+
+	var color_mat_2 = StandardMaterial3D.new()
+	color_mat_2.albedo_color = head_color
+	head_shape.set_surface_override_material(0, color_mat_2)
+	body.set_surface_override_material(0, color_mat_2)
+	hand.set_surface_override_material(0, color_mat_2)
+	$WaistPivot/RightButt/RightFoot/RightFootMesh.set_surface_override_material(0, color_mat_2)
+	$WaistPivot/LeftButt/LeftFoot/LeftFootMesh.set_surface_override_material(0, color_mat_2)
+
+
+func stringToColor(string, mix = Color.WHITE, mixcoeff = 0.5):
+	var color = Color(string.hash() & 0xffffff)
+
+	# mix the color
+	if (mix != null):
+		color.r = color.r * (1 - mixcoeff) + mix.r * mixcoeff
+		color.g = color.g * (1 - mixcoeff) + mix.g * mixcoeff
+		color.b = color.b * (1 - mixcoeff) + mix.b * mixcoeff
+
+	return color
