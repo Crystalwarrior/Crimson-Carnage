@@ -1,7 +1,5 @@
 extends CharacterBody3D
 
-var rng = RandomNumberGenerator.new()
-
 @export_range(1, 35, 1) var speed : float = 5 # m/s
 @export_range(10, 400, 1) var acceleration : float = 25 # m/s^2
 @export_range(10, 400, 1) var deceleration : float = 50 # m/s^2
@@ -25,6 +23,11 @@ var walk_vel : Vector3 # Walking velocity
 var grav_vel : Vector3 # Gravity velocity 
 var jump_vel : Vector3 # Jumping velocity
 
+var health : float = 100.0
+var max_health : float = 100.0
+
+signal health_changed(value)
+
 @export var head_path:NodePath
 @export var face_path:NodePath
 @export var body_path:NodePath
@@ -44,11 +47,23 @@ var jump_vel : Vector3 # Jumping velocity
 @onready var weapon_hitbox:Area3D = get_node(weapon_hitbox_path)
 @onready var weapon_audio:AudioStreamPlayer3D = get_node(weapon_audio_path)
 @onready var foot_audio:AudioStreamPlayer3D = get_node(foot_audio_path)
+@onready var invincible_timer:Timer = $InvincibleTimer
+@onready var collision_shape:CollisionShape3D = $CollisionShape3D
 
 var sounds_env:Array = [
 	preload("res://assets/sounds/swing_hit1.wav"),
+	preload("res://assets/sounds/swing_hit2.wav"),
 	preload("res://assets/sounds/swing_hit3.wav"),
-	preload("res://assets/sounds/swing_hit4.wav")
+	preload("res://assets/sounds/swing_hit4.wav"),
+	preload("res://assets/sounds/swing_hit5.wav")
+]
+var sounds_player:Array = [
+	preload("res://assets/sounds/hit_player1.wav"),
+	preload("res://assets/sounds/hit_player2.wav"),
+	preload("res://assets/sounds/hit_player3.wav"),
+]
+var sounds_player_death:Array = [
+	preload("res://assets/sounds/blunt_death.wav"),
 ]
 var sounds_swing_h:Array = [
 	preload("res://assets/sounds/swing_fast1.wav"),
@@ -60,59 +75,58 @@ var sounds_swing_v:Array = [
 ]
 var sounds_jab:Array = [preload("res://assets/sounds/swing_slow1.wav")]
 
+
+func _enter_tree():
+	set_multiplayer_authority(str(name).to_int())
+
+
 func _ready() -> void:
-	capture_mouse(true)
+	$NameTag.text = name
+
+	if not is_multiplayer_authority(): return
+
+	camera.set_current(true)
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
 
 
 func _unhandled_input(event : InputEvent) -> void:
+	if not is_multiplayer_authority(): return
+
 	input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
 	if event is InputEventMouseMotion: _aim(event)
 	if Input.is_action_just_pressed("jump"): jumping = true
-	if event.is_action("ui_cancel") and event.is_pressed() and not event.is_echo(): capture_mouse(Input.mouse_mode != Input.MOUSE_MODE_CAPTURED)
 	# Attack
 	if event.is_action("attack") and event.is_pressed() and not event.is_echo():
 		if hand_animation.current_animation == "idle":
-			hand_animation.stop()
-			hand_animation.play("swing_h")
-			weapon_audio.stream = sounds_swing_h[randi() % sounds_swing_h.size()]
-			weapon_audio.pitch_scale = rng.randf_range(0.95, 1.05)
-			weapon_audio.play()
+			attack.rpc()
 	elif event.is_action("alt_attack") and event.is_pressed() and not event.is_echo():
 		if hand_animation.current_animation == "idle":
-			hand_animation.stop()
-			hand_animation.play("swing_v")
-			weapon_audio.stream = sounds_swing_v[randi() % sounds_swing_v.size()]
-			weapon_audio.pitch_scale = rng.randf_range(0.95, 1.05)
-			weapon_audio.play()
+			alt_attack.rpc()
 	elif event.is_action("alt2_attack") and event.is_pressed() and not event.is_echo():
 		if hand_animation.current_animation == "idle":
-			hand_animation.stop()
-			hand_animation.play("jab")
-			weapon_audio.stream = load("res://assets/sounds/swing_slow1.wav")
-			weapon_audio.stream = sounds_jab[randi() % sounds_jab.size()]
-			weapon_audio.pitch_scale = rng.randf_range(0.95, 1.05)
-			weapon_audio.play()
+			alt2_attack.rpc()
 
 
 func _physics_process(delta : float) -> void:
+	$SpawnShield.visible = not invincible_timer.is_stopped()
+	if not is_multiplayer_authority(): return
+
 	velocity = _walk(delta) + _gravity(delta) + _jump(delta)
 	move_and_slide()
 	
 	if not is_on_floor():
 		if velocity.y < 0:
-			animation.play("fall")
+			play_anim.rpc("fall")
 		elif animation.current_animation != "rise":
-			animation.play("jump")
+			play_anim.rpc("jump")
 	elif is_on_floor() and not jumping:
 		if animation.current_animation == "fall":
 			footstep()
 		if Vector2(velocity.x, velocity.z).length() > 0.01:
-			animation.play("walk")
 			var anim_speed = Vector2(velocity.x, velocity.z).length() / speed
-			animation.speed_scale = anim_speed
+			play_anim.rpc("walk", anim_speed)
 		else:
-			animation.play("RESET")
-			animation.speed_scale = 1.0
+			play_anim.rpc("RESET", 1.0)
 
 	if camera.current:
 		body.cast_shadow = body.SHADOW_CASTING_SETTING_SHADOWS_ONLY
@@ -120,13 +134,6 @@ func _physics_process(delta : float) -> void:
 	else:
 		face.cast_shadow = body.SHADOW_CASTING_SETTING_ON
 		face.cast_shadow = face.SHADOW_CASTING_SETTING_ON
-
-
-func capture_mouse(capture : bool) -> void:
-	if capture:
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) 
-	else:
-		Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 
 
 func _aim(event : InputEvent) -> void:
@@ -174,21 +181,96 @@ func _on_animation_player_animation_finished(anim_name):
 		animation.play("rise")
 
 
-func _on_weapon_hitbox_body_entered(body):
+func _on_weapon_hitbox_body_entered(hit_body):
+	if not is_multiplayer_authority(): return
+
+	# we're too dead to deal any damage
+	if health <= 0: return
+
 	# Ignore self
-	if body == self:
+	if hit_body == self:
 		return
 
 	# Disable the hitbox
 	weapon_hitbox.set_deferred("monitoring", false)
 	
+	var dmg_amount = 0
+	
 	# Play recoil animation to indicate a hit
 	if hand_animation.current_animation == "swing_h":
-		hand_animation.play("recoil_h")
+		dmg_amount = 45
+		recoil1.rpc()
 	if hand_animation.current_animation == "swing_v":
-		hand_animation.play("recoil_v")
+		dmg_amount = 45
+		recoil2.rpc()
 	if hand_animation.current_animation == "jab":
-		hand_animation.play("recoil_h")
+		dmg_amount = 35
+		recoil1.rpc()
+
+	# Damage
+	if hit_body.has_method("receive_damage") and hit_body.get_multiplayer_authority() > 0 and hit_body.get_multiplayer_authority() != multiplayer.get_unique_id():
+		if not hit_body.invincible_timer.is_stopped():
+			return
+		print(hit_body.health, " ", dmg_amount)
+		if hit_body.health <= dmg_amount:
+			hitsound_murder.rpc()
+		else:
+			hitsound_harm.rpc()
+		hit_body.receive_damage.rpc(dmg_amount)
+	else:
+		hitsound_env.rpc()
+
+
+func footstep():
+	if not is_multiplayer_authority(): return
+
+	if is_on_floor():
+		footstep_sound.rpc()
+
+
+@rpc("call_local")
+func footstep_sound():
+	foot_audio.pitch_scale = randf_range(0.95, 1.05)
+	foot_audio.play()
+
+
+@rpc("call_local")
+func play_anim(anim, speed_scale=1.0):
+	animation.play(anim)
+	animation.speed_scale = speed_scale
+
+
+@rpc("call_local")
+func attack():
+	hand_animation.stop()
+	hand_animation.play("swing_h")
+	weapon_audio.stream = sounds_swing_h[randi() % sounds_swing_h.size()]
+	weapon_audio.pitch_scale = randf_range(0.95, 1.05)
+	weapon_audio.play()
+
+
+@rpc("call_local")
+func alt_attack():
+	hand_animation.stop()
+	hand_animation.play("swing_v")
+	weapon_audio.stream = sounds_swing_v[randi() % sounds_swing_v.size()]
+	weapon_audio.pitch_scale = randf_range(0.95, 1.05)
+	weapon_audio.play()
+
+
+@rpc("call_local")
+func alt2_attack():
+	hand_animation.stop()
+	hand_animation.play("jab")
+	weapon_audio.stream = load("res://assets/sounds/swing_slow1.wav")
+	weapon_audio.stream = sounds_jab[randi() % sounds_jab.size()]
+	weapon_audio.pitch_scale = randf_range(0.95, 1.05)
+	weapon_audio.play()
+
+
+@rpc("call_local")
+func recoil1():
+	hand_animation.play("recoil_h")
 
 	# Fade out the swing sound
 	var tween = create_tween()
@@ -196,19 +278,63 @@ func _on_weapon_hitbox_body_entered(body):
 	tween.tween_callback(weapon_audio.stop)
 	tween.tween_property(weapon_audio, "volume_db", 0, 0)
 
-	# Play a hit sound
+
+@rpc("call_local")
+func recoil2():
+	hand_animation.play("recoil_v")
+
+	# Fade out the swing sound
+	var tween = create_tween()
+	tween.tween_property(weapon_audio, "volume_db", -80, 0.3)
+	tween.tween_callback(weapon_audio.stop)
+	tween.tween_property(weapon_audio, "volume_db", 0, 0)
+
+
+@rpc("call_local")
+func hitsound_env():
 	var hitsound = AudioStreamPlayer3D.new()
 	self.get_parent().add_child(hitsound)
 	hitsound.global_position = weapon_audio.global_position
 	hitsound.stream = sounds_env[randi() % sounds_env.size()]
-	hitsound.pitch_scale = rng.randf_range(0.95, 1.05)
+	hitsound.pitch_scale = randf_range(0.95, 1.05)
 	hitsound.play()
 	hitsound.connect("finished", hitsound.queue_free)
 
 
-func footstep():
-	if is_on_floor():
-		foot_audio.pitch_scale = rng.randf_range(0.95, 1.05)
-		foot_audio.play()
+@rpc("call_local")
+func hitsound_harm():
+	var hitsound = AudioStreamPlayer3D.new()
+	self.get_parent().add_child(hitsound)
+	hitsound.global_position = weapon_audio.global_position
+	hitsound.stream = sounds_player[randi() % sounds_player.size()]
+	hitsound.pitch_scale = randf_range(0.95, 1.05)
+	hitsound.play()
+	hitsound.connect("finished", hitsound.queue_free)
 
 
+@rpc("call_local")
+func hitsound_murder():
+	var hitsound = AudioStreamPlayer3D.new()
+	self.get_parent().add_child(hitsound)
+	hitsound.global_position = weapon_audio.global_position
+	hitsound.stream = sounds_player_death[randi() % sounds_player_death.size()]
+	hitsound.pitch_scale = randf_range(0.95, 1.05)
+	hitsound.play()
+	hitsound.connect("finished", hitsound.queue_free)
+
+
+@rpc("any_peer", "call_local")
+func receive_damage(amt):
+	health -= amt
+	health_changed.emit(health)
+
+
+@rpc("any_peer", "call_local")
+func set_health(amt):
+	health = amt
+	health_changed.emit(health)
+
+
+@rpc("any_peer", "call_local")
+func invincibility(amt):
+	invincible_timer.start(amt)

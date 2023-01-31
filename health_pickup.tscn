@@ -1,0 +1,137 @@
+[gd_scene load_steps=12 format=3 uid="uid://bn02tul41okrh"]
+
+[ext_resource type="Script" path="res://health_pickup.gd" id="1_2sqfe"]
+[ext_resource type="AudioStream" uid="uid://drpiafgvc3ceo" path="res://assets/sounds/health_pickup.wav" id="2_cwec4"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_j0yck"]
+radius = 0.75
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n6av7"]
+transparency = 1
+blend_mode = 1
+albedo_color = Color(0.298039, 1, 1, 0.12549)
+
+[sub_resource type="SphereMesh" id="SphereMesh_gj7rg"]
+material = SubResource("StandardMaterial3D_n6av7")
+radius = 0.75
+height = 1.5
+
+[sub_resource type="Animation" id="Animation_2lni3"]
+resource_name = "idle"
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Mesh:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, 6.28319, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Mesh:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(-2, -2),
+"update": 0,
+"values": [Vector3(0, -0.1, 0), Vector3(0, 0.1, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_reiwt"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Mesh:rotation")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Mesh:position")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0.088801, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_cs74h"]
+_data = {
+"RESET": SubResource("Animation_reiwt"),
+"idle": SubResource("Animation_2lni3")
+}
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_n0npo"]
+albedo_color = Color(0, 1, 0.670588, 1)
+emission_enabled = true
+emission = Color(0, 1, 0, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ydr55"]
+material = SubResource("StandardMaterial3D_n0npo")
+size = Vector3(0.25, 0.25, 0.75)
+
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_eknd5"]
+properties/0/path = NodePath(".:visible")
+properties/0/spawn = true
+properties/0/sync = true
+properties/1/path = NodePath("Area3D:monitoring")
+properties/1/spawn = true
+properties/1/sync = true
+
+[node name="HealthPickup" type="Node3D"]
+script = ExtResource("1_2sqfe")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+shape = SubResource("SphereShape3D_j0yck")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Area3D"]
+mesh = SubResource("SphereMesh_gj7rg")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+autoplay = "idle"
+libraries = {
+"": SubResource("AnimationLibrary_cs74h")
+}
+
+[node name="Mesh" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.088801, 0)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Mesh"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 0, 0)
+mesh = SubResource("BoxMesh_ydr55")
+skeleton = NodePath("../..")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Mesh"]
+mesh = SubResource("BoxMesh_ydr55")
+skeleton = NodePath("../..")
+
+[node name="AudioStreamPlayer3D" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2_cwec4")
+
+[node name="RespawnTimer" type="Timer" parent="."]
+wait_time = 15.0
+one_shot = true
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="."]
+replication_config = SubResource("SceneReplicationConfig_eknd5")
+
+[connection signal="body_entered" from="Area3D" to="." method="_on_area_3d_body_entered"]
+[connection signal="timeout" from="RespawnTimer" to="." method="_on_respawn_timer_timeout"]
