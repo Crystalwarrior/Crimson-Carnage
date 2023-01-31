@@ -1,6 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://r1ylckyy0ylh"]
+[gd_scene load_steps=6 format=3 uid="uid://r1ylckyy0ylh"]
 
+[ext_resource type="Script" path="res://hud.gd" id="1_dnq0r"]
 [ext_resource type="StyleBox" uid="uid://kr3pmx0ygoh3" path="res://assets/ui/stylebox_health_bar.tres" id="1_u8bsb"]
+[ext_resource type="Script" path="res://chat.gd" id="2_ulpa3"]
+[ext_resource type="AudioStream" uid="uid://cwajme7r1di3n" path="res://assets/sounds/ui/chat.ogg" id="3_4mel7"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4wd06"]
 draw_center = false
@@ -19,6 +22,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
+script = ExtResource("1_dnq0r")
 
 [node name="DamageOverlay" type="Panel" parent="."]
 layout_mode = 1
@@ -51,3 +55,26 @@ offset_bottom = 28.0
 text = "100"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Chat" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_right = 331.0
+offset_bottom = 180.0
+script = ExtResource("2_ulpa3")
+
+[node name="ChatLogs" type="PanelContainer" parent="Chat"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="RichTextLabel" type="RichTextLabel" parent="Chat/ChatLogs"]
+layout_mode = 2
+bbcode_enabled = true
+scroll_following = true
+
+[node name="ChatInput" type="LineEdit" parent="Chat"]
+layout_mode = 2
+
+[node name="ChatAudio" type="AudioStreamPlayer" parent="Chat"]
+stream = ExtResource("3_4mel7")
+
+[connection signal="send" from="Chat" to="." method="_on_chat_send"]

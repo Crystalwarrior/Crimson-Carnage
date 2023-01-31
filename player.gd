@@ -24,6 +24,8 @@ var jump_vel : Vector3 # Jumping velocity
 var health : float = 100.0
 var max_health : float = 100.0
 
+var last_hit = null
+
 signal health_changed(value)
 
 @onready var head:Node3D = $HeadPivot
@@ -81,9 +83,14 @@ func _ready() -> void:
 func _unhandled_input(event : InputEvent) -> void:
 	if not is_multiplayer_authority(): return
 
-	input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	# Mouselook is epic
 	if event is InputEventMouseMotion: _aim(event)
-	if Input.is_action_just_pressed("jump"): jumping = true
+
+	# we're too dead to process any movement
+	if health <= 0: return
+
+	input_dir = Input.get_vector("move_left", "move_right", "move_forward", "move_backward")
+	if event.is_action("jump") and event.is_pressed() and not event.is_echo(): jumping = true
 	# Attack
 	if event.is_action("attack") and event.is_pressed() and not event.is_echo():
 		if hand_animation.current_animation == "idle":
@@ -99,6 +106,8 @@ func _unhandled_input(event : InputEvent) -> void:
 func _physics_process(delta : float) -> void:
 	$SpawnShield.visible = not invincible_timer.is_stopped()
 	if not is_multiplayer_authority(): return
+	# we're too dead to do any physics
+	if health <= 0: return
 
 	velocity = _walk(delta) + _gravity(delta) + _jump(delta)
 	move_and_slide()
@@ -207,7 +216,7 @@ func _on_weapon_hitbox_body_entered(hit_body):
 			hitsound_murder.rpc()
 		else:
 			hitsound_harm.rpc()
-		hit_body.receive_damage.rpc(dmg_amount)
+		hit_body.receive_damage.rpc(dmg_amount, multiplayer.get_unique_id())
 	else:
 		hitsound_env.rpc()
 
@@ -315,7 +324,8 @@ func hitsound_murder():
 
 
 @rpc("any_peer", "call_local")
-func receive_damage(amt):
+func receive_damage(amt, source_id = 0):
+	last_hit = source_id
 	health -= amt
 	health_changed.emit(health)
 
@@ -329,6 +339,20 @@ func set_health(amt):
 @rpc("any_peer", "call_local")
 func invincibility(amt):
 	invincible_timer.start(amt)
+
+
+func freeze():
+	axis_lock_linear_x = true
+	axis_lock_linear_y = true
+	axis_lock_linear_z = true
+	collision_shape.disabled = true
+
+
+func unfreeze():
+	axis_lock_linear_x = false
+	axis_lock_linear_y = false
+	axis_lock_linear_z = false
+	collision_shape.disabled = false
 
 
 func colorize():
