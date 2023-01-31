@@ -86,9 +86,11 @@ func update_health_bar(health_value):
 		damage_overlay.modulate.b = 0.0
 		damage_overlay.modulate.a = 100.0 / difference
 
+	# this is the dumbest place to handle it (isn't this function ui?)
 	if health_value <= 0:
 		respawn_player(multiplayer.get_unique_id())
 		health_value = 100.0
+
 	health_bar.value = health_value
 	health_bar.get_node("Label").text = str(health_value)
 

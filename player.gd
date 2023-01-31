@@ -203,7 +203,6 @@ func _on_weapon_hitbox_body_entered(hit_body):
 	if hit_body.has_method("receive_damage") and hit_body.get_multiplayer_authority() > 0 and hit_body.get_multiplayer_authority() != multiplayer.get_unique_id():
 		if not hit_body.invincible_timer.is_stopped():
 			return
-		print(hit_body.health, " ", dmg_amount)
 		if hit_body.health <= dmg_amount:
 			hitsound_murder.rpc()
 		else:
